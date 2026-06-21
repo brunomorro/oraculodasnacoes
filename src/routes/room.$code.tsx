@@ -19,7 +19,16 @@ function WaitingRoom() {
   const { code } = Route.useParams();
   const navigate = useNavigate();
 
-  const playerId = sessionStorage.getItem("mp_player_id") ?? "";
+  // Generate player ID if arriving via direct link (skipping lobby)
+  const playerId = (() => {
+    let id = sessionStorage.getItem("mp_player_id");
+    if (!id) {
+      id = crypto.randomUUID();
+      sessionStorage.setItem("mp_player_id", id);
+      sessionStorage.setItem("mp_is_host", "false");
+    }
+    return id;
+  })();
   const isHost = sessionStorage.getItem("mp_is_host") === "true";
 
   const [room, setRoom] = useState<Room | null>(null);
