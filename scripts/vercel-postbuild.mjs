@@ -66,7 +66,10 @@ export default async function handler(req, res) {
 `
 );
 
-// 5. Copia o servidor e seus assets
+// 5. package.json para ESM na função
+fs.writeFileSync(`${FUNC}/package.json`, JSON.stringify({ type: "module" }));
+
+// Copia o servidor e seus assets
 fs.copyFileSync("dist/server/server.js", `${FUNC}/server.js`);
 for (const file of fs.readdirSync("dist/server/assets")) {
   fs.copyFileSync(`dist/server/assets/${file}`, `${FUNC}/assets/${file}`);
