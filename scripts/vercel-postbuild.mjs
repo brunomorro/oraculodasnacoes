@@ -1,6 +1,5 @@
 import fs from "fs";
 import { execSync } from "child_process";
-import { createRequire } from "module";
 import { fileURLToPath } from "url";
 import path from "path";
 
@@ -25,17 +24,19 @@ fs.writeFileSync(
   })
 );
 
-// 3. Config da função Node.js serverless
+// 3. Config da função — .mjs força ESM sem ambiguidade
 fs.writeFileSync(
   `${FUNC}/.vc-config.json`,
   JSON.stringify({
     runtime: "nodejs20.x",
-    handler: "index.js",
+    handler: "index.mjs",
     launcherType: "Nodejs",
+    shouldAddHelpers: false,
+    supportsResponseStreaming: true,
   })
 );
 
-// 4. Cria entry point para o bundle
+// 4. Entry point temporário
 const entryPath = path.join(ROOT, "_vercel_entry_tmp.mjs");
 fs.writeFileSync(entryPath, `
 import server from "./dist/server/server.js";
@@ -77,7 +78,7 @@ export default async function handler(req, res) {
 }
 `);
 
-// 5. Usa esbuild para criar bundle completo com todas as dependências
+// 5. Bundle com esbuild → .mjs (ESM explícito)
 console.log("Bundling com esbuild...");
 execSync(
   `node_modules/.bin/esbuild _vercel_entry_tmp.mjs \
@@ -85,16 +86,14 @@ execSync(
     --platform=node \
     --target=node20 \
     --format=esm \
-    --outfile=.vercel/output/functions/__nitro.func/index.js \
-    --external:node:* \
-    --banner:js="import { createRequire } from 'module'; const require = createRequire(import.meta.url);"`,
+    --outfile=.vercel/output/functions/__nitro.func/index.mjs \
+    --external:node:*`,
   { cwd: ROOT, stdio: "inherit" }
 );
 
-// 6. Limpa arquivo temporário
 fs.unlinkSync(entryPath);
 
-// 7. Copia assets estáticos do cliente
+// 6. Assets estáticos do cliente
 for (const file of fs.readdirSync(`${ROOT}/dist/client/assets`)) {
   fs.copyFileSync(`${ROOT}/dist/client/assets/${file}`, `${OUT}/static/assets/${file}`);
 }
