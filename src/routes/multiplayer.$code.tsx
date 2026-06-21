@@ -14,6 +14,12 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/multiplayer/$code")({
   head: () => ({ meta: [{ title: "Partida Online · Oráculo das Nações" }] }),
+  errorComponent: ({ error }) => (
+    <div style={{ padding: 24, fontFamily: "monospace", color: "#f87171", background: "#0f172a", minHeight: "100vh" }}>
+      <h2 style={{ color: "#fbbf24" }}>Erro na tela de jogo</h2>
+      <pre style={{ whiteSpace: "pre-wrap", fontSize: 13 }}>{String((error as Error)?.stack ?? error)}</pre>
+    </div>
+  ),
   component: MultiplayerGame,
 });
 
