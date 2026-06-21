@@ -39,6 +39,7 @@ function WaitingRoom() {
   const [copied, setCopied] = useState(false);
   const [starting, setStarting] = useState(false);
   const [sheetLeader, setSheetLeader] = useState<LeaderId | null>(null);
+  const [startError, setStartError] = useState("");
 
   // Load room + subscribe to realtime
   useEffect(() => {
@@ -104,9 +105,33 @@ function WaitingRoom() {
   async function startGame() {
     if (!room) return;
     setStarting(true);
-    const readyPlayers = players.filter((p) => p.is_ready || p.is_host);
-    const gameState = dealMultiplayerGame(readyPlayers);
-    await supabase.from("rooms").update({ status: "playing", game_state: gameState }).eq("id", room.id);
+    setStartError("");
+    try {
+      // Fetch fresh player list to avoid stale state
+      const { data: freshPlayers, error: fetchErr } = await supabase
+        .from("room_players").select("*").eq("room_id", room.id);
+      if (fetchErr || !freshPlayers?.length) {
+        setStartError("Erro ao buscar jogadores. Tente novamente.");
+        setStarting(false);
+        return;
+      }
+      const readyPlayers = freshPlayers.filter((p) => p.is_ready || p.is_host);
+      if (readyPlayers.length < 2) {
+        setStartError("Precisam de pelo menos 2 líderes prontos.");
+        setStarting(false);
+        return;
+      }
+      const gameState = dealMultiplayerGame(readyPlayers);
+      const { error: updateErr } = await supabase
+        .from("rooms").update({ status: "playing", game_state: gameState }).eq("id", room.id);
+      if (updateErr) {
+        setStartError("Erro ao iniciar: " + updateErr.message);
+        setStarting(false);
+      }
+    } catch (e: unknown) {
+      setStartError("Erro inesperado. Tente novamente.");
+      setStarting(false);
+    }
   }
 
   function copyCode() {
@@ -276,12 +301,15 @@ function WaitingRoom() {
 
         {/* Ações */}
         {joined && (
-          <div className="shrink-0 flex gap-3">
+          <div className="shrink-0 flex flex-col gap-2">
+            {startError && (
+              <p className="text-center text-sm text-negative">{startError}</p>
+            )}
             {!isHost && (
               <button
                 onClick={toggleReady}
                 className={cn(
-                  "flex-1 rounded-xl py-3.5 font-sans text-sm font-bold uppercase tracking-widest transition",
+                  "w-full rounded-xl py-3.5 font-sans text-sm font-bold uppercase tracking-widest transition",
                   me?.is_ready
                     ? "bg-positive/20 border border-positive/50 text-positive"
                     : "bg-gradient-to-b from-gold to-gold-soft text-primary-foreground hover:brightness-110",
@@ -294,7 +322,7 @@ function WaitingRoom() {
               <button
                 onClick={startGame}
                 disabled={!allReady || starting || players.length < 2}
-                className="flex-1 rounded-xl bg-gradient-to-b from-gold to-gold-soft py-3.5 font-sans text-sm font-bold uppercase tracking-widest text-primary-foreground hover:brightness-110 transition disabled:opacity-40"
+                className="w-full rounded-xl bg-gradient-to-b from-gold to-gold-soft py-3.5 font-sans text-sm font-bold uppercase tracking-widest text-primary-foreground hover:brightness-110 transition disabled:opacity-40"
               >
                 {starting ? "Iniciando…" : players.length < 2 ? "Aguardando líderes" : allReady ? "Iniciar Partida" : "Aguardando prontos"}
               </button>
