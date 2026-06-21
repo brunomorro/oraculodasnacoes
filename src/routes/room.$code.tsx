@@ -136,7 +136,7 @@ function WaitingRoom() {
               {copied ? "Copiado!" : "Copiar link"}
             </button>
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">Compartilhe o link ou o código com os alunos</p>
+          <p className="mt-2 text-xs text-muted-foreground">Compartilhe o link ou o código com os outros líderes</p>
         </div>
 
         {/* Join form */}

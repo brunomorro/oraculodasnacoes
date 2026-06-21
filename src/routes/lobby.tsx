@@ -82,7 +82,7 @@ function Lobby() {
         >
           <Globe2 className="mx-auto h-10 w-10 text-gold mb-3" />
           <h1 className="font-display text-4xl text-gold-gradient">Multiplayer</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Jogue com turmas inteiras em tempo real</p>
+          <p className="mt-2 text-sm text-muted-foreground">Dispute com outros líderes em tempo real</p>
         </motion.div>
 
         <motion.div
@@ -97,7 +97,7 @@ function Lobby() {
               <Plus className="h-3.5 w-3.5" /> Criar Sala (Anfitrião)
             </div>
             <p className="text-xs text-muted-foreground mb-4">
-              Crie uma sala e compartilhe o código com sua turma.
+              Crie uma sala e compartilhe o código com os outros líderes.
             </p>
             <button
               onClick={createRoom}
