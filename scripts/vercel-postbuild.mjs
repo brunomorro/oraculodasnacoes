@@ -62,12 +62,18 @@ export default async function handler(req, res) {
     body,
   });
 
-  const response = await server.fetch(request, {});
-
-  res.statusCode = response.status;
-  response.headers.forEach((v, k) => res.setHeader(k, v));
-  const buf = await response.arrayBuffer();
-  res.end(Buffer.from(buf));
+  try {
+    const response = await server.fetch(request, {});
+    res.statusCode = response.status;
+    response.headers.forEach((v, k) => res.setHeader(k, v));
+    const buf = await response.arrayBuffer();
+    res.end(Buffer.from(buf));
+  } catch (err) {
+    console.error("[handler error]", err);
+    res.statusCode = 500;
+    res.setHeader("content-type", "text/plain");
+    res.end("Server error: " + String(err?.stack ?? err));
+  }
 }
 `);
 
