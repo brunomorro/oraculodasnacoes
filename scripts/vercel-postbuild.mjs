@@ -31,19 +31,9 @@ const html = `<!DOCTYPE html>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Red+Hat+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
     ${cssTag}
-    <script>
-      // Minimal SSR bootstrap expected by TanStack Start's hydrateStart().
-      // With no server-rendered matches, React 18+ falls back to a full
-      // client-side render without any hydration-mismatch errors.
-      window.$_TSR = {
-        initialized: false,
-        router: { matches: [], dehydratedData: null, manifest: null, lastMatchId: null },
-        buffer: [],
-        h: function() {}
-      };
-    </script>
   </head>
   <body>
+    <div id="root"></div>
     <script type="module" src="/assets/${jsFile}"></script>
   </body>
 </html>`;
