@@ -8,21 +8,25 @@ const OUT = path.join(ROOT, ".vercel/output");
 
 fs.mkdirSync(`${OUT}/static/assets`, { recursive: true });
 
-// Discover built asset filenames
 const assetFiles = fs.readdirSync(`${ROOT}/dist/client/assets`);
 const cssFile = assetFiles.find((f) => f.endsWith(".css"));
 const jsFile = assetFiles.find((f) => f.startsWith("index-") && f.endsWith(".js"));
 
 if (!jsFile) throw new Error("Could not find index-*.js in dist/client/assets");
 
-// Generate a minimal client-only shell — no SSR content so React never hydrates
 const cssTag = cssFile ? `<link rel="stylesheet" href="/assets/${cssFile}">` : "";
+
+// Minimal shell HTML — no SSR content, pure client-side SPA
 const html = `<!DOCTYPE html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Oráculo das Nações</title>
+    <meta name="description" content="Dispute PIB, juros, inflação e dívida — quem manda no tabuleiro global?" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Red+Hat+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
     ${cssTag}
   </head>
   <body>
@@ -32,9 +36,8 @@ const html = `<!DOCTYPE html>
 </html>`;
 
 fs.writeFileSync(`${OUT}/static/index.html`, html);
-console.log(`✓ index.html (shell) gerado — js: ${jsFile}, css: ${cssFile ?? "none"}`);
+console.log(`✓ shell index.html gerado — js: ${jsFile}, css: ${cssFile ?? "none"}`);
 
-// Copy all client assets
 for (const file of assetFiles) {
   fs.copyFileSync(
     `${ROOT}/dist/client/assets/${file}`,
@@ -43,7 +46,6 @@ for (const file of assetFiles) {
 }
 console.log(`✓ ${assetFiles.length} assets copiados`);
 
-// Vercel Output API v3 — SPA rewrites
 fs.writeFileSync(
   `${OUT}/config.json`,
   JSON.stringify({

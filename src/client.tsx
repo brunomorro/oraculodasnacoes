@@ -1,13 +1,16 @@
 import { StrictMode, startTransition } from "react";
 import { createRoot } from "react-dom/client";
-import { StartClient } from "@tanstack/react-start/client";
+import { RouterProvider } from "@tanstack/react-router";
+import { getRouter } from "./router";
 
-// Use createRoot (not hydrateRoot) so the app works as a pure client-side SPA
-// without needing matching SSR content in index.html.
+// Pure SPA entry — bypasses TanStack Start's SSR hydrateRoot/hydrateStart
+// so the app works as a static client-side bundle on Vercel.
+const router = getRouter();
+
 startTransition(() => {
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
-      <StartClient />
+      <RouterProvider router={router} />
     </StrictMode>,
   );
 });
