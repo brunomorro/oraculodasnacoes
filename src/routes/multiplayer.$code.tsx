@@ -51,6 +51,9 @@ function MultiplayerGame() {
   const pickedRef = useRef(false);
   const revealTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Must be called before any early return to satisfy Rules of Hooks
+  const isMobile = useIsMobile();
+
   useEffect(() => {
     async function load() {
       const { data } = await supabase.from("rooms").select("*").eq("code", code).single();
@@ -124,7 +127,6 @@ function MultiplayerGame() {
     </div>
   );
 
-  const isMobile = useIsMobile();
   const me = gs.players.find((p) => p.playerId === playerId);
   const others = gs.players.filter((p) => p.playerId !== playerId);
   const isMyTurn = gs.currentPlayerId === playerId;
