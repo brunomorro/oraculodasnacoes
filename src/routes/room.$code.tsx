@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Copy, Crown, Users } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState } from "react";
 import { MapBackground } from "@/components/MapBackground";
 import { LeaderBadge } from "@/components/LeaderBadge";
@@ -155,15 +156,35 @@ function WaitingRoom() {
         <div className="text-center shrink-0">
           <div className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground mb-1">Código da Sala</div>
           <div className="font-display text-5xl tracking-[0.4em] text-gold-gradient">{code}</div>
-          <div className="mt-2 flex items-center gap-2 rounded-xl glass-panel px-3 py-1.5 max-w-sm mx-auto">
-            <span className="flex-1 truncate text-xs text-muted-foreground font-mono">
-              {typeof window !== "undefined" ? window.location.origin : ""}/room/{code}
-            </span>
-            <button onClick={copyCode}
-              className="shrink-0 flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-semibold text-gold hover:text-gold/80 transition-colors">
-              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-              {copied ? "Copiado!" : "Copiar"}
-            </button>
+
+          {/* QR code + link */}
+          <div className="mt-3 flex items-center gap-3 max-w-sm mx-auto">
+            {/* QR code */}
+            <div className="shrink-0 rounded-xl bg-white p-2">
+              <QRCodeSVG
+                value={typeof window !== "undefined" ? `${window.location.origin}/room/${code}` : ""}
+                size={72}
+                bgColor="#ffffff"
+                fgColor="#0f172a"
+                level="M"
+              />
+            </div>
+            {/* Link + copy */}
+            <div className="flex-1 flex flex-col gap-1.5">
+              <div className="rounded-xl glass-panel px-3 py-1.5 flex items-center gap-2">
+                <span className="flex-1 truncate text-[11px] text-muted-foreground font-mono">
+                  {typeof window !== "undefined" ? window.location.origin : ""}/room/{code}
+                </span>
+                <button onClick={copyCode}
+                  className="shrink-0 flex items-center gap-1 text-[10px] uppercase tracking-widest font-semibold text-gold hover:text-gold/80 transition-colors">
+                  {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                  {copied ? "Copiado!" : "Copiar"}
+                </button>
+              </div>
+              <p className="text-[10px] text-muted-foreground/60 text-left">
+                Escaneie o QR ou compartilhe o link
+              </p>
+            </div>
           </div>
         </div>
 
