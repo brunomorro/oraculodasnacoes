@@ -9,6 +9,7 @@ import { COUNTRIES, type Attribute } from "@/lib/countries";
 import { supabase } from "@/lib/supabase";
 import { resolveRound } from "@/lib/multiplayer-engine";
 import type { MPGameState, MPPlayer, Room } from "@/lib/multiplayer-types";
+import { useIsMobile } from "@/lib/use-is-mobile";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/multiplayer/$code")({
@@ -117,6 +118,7 @@ function MultiplayerGame() {
     </div>
   );
 
+  const isMobile = useIsMobile();
   const me = gs.players.find((p) => p.playerId === playerId);
   const others = gs.players.filter((p) => p.playerId !== playerId);
   const isMyTurn = gs.currentPlayerId === playerId;
@@ -127,6 +129,141 @@ function MultiplayerGame() {
   const otherPositions = getBotPositions(others.length);
   const ovalWidth = "min(98vw, calc((100dvh - 300px) * 2.8))";
 
+  // ── MOBILE: Kahoot-style layout ───────────────────────────────────────────
+  if (isMobile) {
+    const sorted = [...gs.players].sort((a, b) => b.deckIds.length - a.deckIds.length);
+    return (
+      <div className="relative h-screen overflow-hidden flex flex-col select-none bg-background">
+        <MapBackground />
+
+        {/* Header */}
+        <header className="relative z-10 flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
+          <button onClick={() => navigate({ to: "/" })}
+            className="flex items-center gap-1.5 text-[11px] font-sans uppercase tracking-widest text-muted-foreground hover:text-gold">
+            <X className="h-3.5 w-3.5" /> Sair
+          </button>
+          <div className="font-display text-sm text-gold-gradient tracking-widest">Sala {code}</div>
+          <div className="text-[10px] font-sans text-muted-foreground uppercase tracking-widest">
+            Rod. {gs.roundNumber}
+          </div>
+        </header>
+
+        {/* Placar horizontal compacto */}
+        <div className="relative z-10 flex gap-2 px-3 pb-2 overflow-x-auto shrink-0 scrollbar-none">
+          {sorted.map((p, i) => {
+            const isMe = p.playerId === playerId;
+            const isActive = gs.currentPlayerId === p.playerId;
+            return (
+              <div key={p.playerId}
+                className={cn("flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 shrink-0 transition",
+                  isMe ? "bg-gold/15 border border-gold/40" : "glass-panel",
+                  isActive && "ring-1 ring-gold/60")}>
+                <span className="text-base">{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : ""}</span>
+                <span className={cn("font-sans text-xs font-semibold truncate max-w-[60px]",
+                  isMe ? "text-gold" : "text-foreground")}>
+                  {isMe ? "Você" : p.name.split(" ")[0]}
+                </span>
+                <span className="font-bold text-xs text-gold tabular-nums">{p.deckIds.length}✦</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Minha carta — centro */}
+        <div className="relative z-10 flex-1 min-h-0 flex flex-col items-center justify-center px-4 gap-3">
+          {gs.winnerId ? (
+            <div className="flex flex-col items-center gap-3 text-center">
+              <Crown className="h-14 w-14 text-gold" />
+              <div className="font-display text-3xl text-gold-gradient">
+                {gs.winnerId === playerId ? "Você venceu!" : `${gs.players.find(p => p.playerId === gs.winnerId)?.name} venceu!`}
+              </div>
+            </div>
+          ) : isSpectating ? (
+            <div className="flex flex-col items-center gap-2 text-center">
+              <Eye className="h-8 w-8 text-accent" />
+              <div className="font-sans text-sm text-accent uppercase tracking-widest">Você foi eliminado</div>
+            </div>
+          ) : me && myCard ? (
+            <AnimatePresence mode="wait">
+              {gs.phase === "revealing" && gs.lastRound ? (
+                // Show comparison during reveal
+                <motion.div key="reveal" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+                  className="flex flex-col items-center gap-3 w-full">
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {gs.lastRound.reveals.map((r) => {
+                      const country = COUNTRIES.find((c) => c.id === r.cardId)!;
+                      const isW = r.playerId === gs.lastRound!.winnerId;
+                      const isL = gs.lastRound!.winnerId !== null && !isW;
+                      return (
+                        <div key={r.playerId} className="flex flex-col items-center gap-1">
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-widest truncate max-w-[100px]">
+                            {r.playerId === playerId ? "Você" : gs.players.find(p => p.playerId === r.playerId)?.name}
+                          </span>
+                          <CountryCard country={country} highlightedAttr={gs.lastRound!.attribute}
+                            isWinner={isW} isLoser={isL} size="sm" flipIn revealDelay={0} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {gs.lastRound.winnerId && (
+                    <div className={cn("rounded-xl px-4 py-2 font-bold text-sm",
+                      gs.lastRound.winnerId === playerId ? "bg-positive/20 text-positive border border-positive/50"
+                        : "bg-negative/20 text-negative border border-negative/50")}>
+                      {gs.lastRound.winnerId === playerId ? "Você venceu a rodada!" : `${gs.players.find(p => p.playerId === gs.lastRound!.winnerId)?.name} venceu`}
+                    </div>
+                  )}
+                </motion.div>
+              ) : (
+                <motion.div key="mycard" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+                  className="flex flex-col items-center gap-3">
+                  <CountryCard country={myCard} selectable={canPlay} onSelectAttribute={pickAttribute} size="md" />
+                  {!isMyTurn && (
+                    <div className="text-sm text-muted-foreground/60 uppercase tracking-widest font-sans">
+                      Vez de {currentPlayer?.name}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          ) : null}
+        </div>
+
+        {/* Outros jogadores — barra inferior */}
+        <div className="relative z-10 shrink-0 border-t border-gold/20 bg-background/50 backdrop-blur-md px-3 py-3">
+          <div className="flex justify-center gap-3 overflow-x-auto scrollbar-none">
+            {others.map((p) => {
+              const isActive = gs.currentPlayerId === p.playerId;
+              const eliminated = p.deckIds.length === 0 && !gs.winnerId;
+              return (
+                <div key={p.playerId} className={cn("flex flex-col items-center gap-1 shrink-0 transition",
+                  eliminated && "opacity-30")}>
+                  <LeaderBadge leaderId={p.leaderId} name={p.name}
+                    cardsLeft={p.deckIds.length} active={isActive}
+                    winner={gs.winnerId === p.playerId} size="sm" />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Turn indicator */}
+        <AnimatePresence>
+          {isMyTurn && gs.phase === "choosing" && !gs.winnerId && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              className="absolute top-32 left-1/2 -translate-x-1/2 z-30 pointer-events-none"
+            >
+              <div className="rounded-2xl bg-gold/15 border border-gold/50 px-5 py-2 font-sans text-sm font-bold text-gold tracking-wide whitespace-nowrap">
+                Escolha um atributo
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  // ── DESKTOP: oval table layout ────────────────────────────────────────────
   return (
     <div className="relative h-screen overflow-hidden flex flex-col select-none">
       <MapBackground />
