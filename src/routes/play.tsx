@@ -250,7 +250,7 @@ function Play() {
 
           {/* ── Center table — comparison cards OR info ── */}
           {/* z-20 keeps this above the human block (z-10) on every screen size. */}
-          <div className="absolute inset-[20%] z-20 flex flex-col items-center justify-center gap-2 pointer-events-none overflow-hidden">
+          <div className="absolute inset-x-[20%] inset-y-[5%] z-20 flex flex-col items-center justify-center gap-2 pointer-events-none">
             <AnimatePresence mode="wait">
               {state.phase === "revealing" && state.revealAttribute ? (
                 /* Current round being revealed — show all players' top cards */

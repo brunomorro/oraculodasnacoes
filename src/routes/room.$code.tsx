@@ -149,7 +149,7 @@ function WaitingRoom() {
   return (
     <>
       <MapBackground />
-      <main className="relative mx-auto flex h-screen max-w-lg flex-col px-4 pt-6 pb-6 gap-4 overflow-hidden">
+      <main className="relative mx-auto flex h-screen max-w-2xl flex-col px-4 pt-6 pb-6 gap-4 overflow-hidden">
 
         {/* Header — código da sala */}
         <div className="text-center shrink-0">
@@ -188,9 +188,9 @@ function WaitingRoom() {
               />
 
               {/* Grade de líderes — mesmo formato do avatar-select */}
-              <div className="flex-1 min-h-0 overflow-y-auto rounded-2xl glass-panel p-3">
-                <div className="text-[10px] uppercase tracking-[0.25em] text-gold mb-2.5">Escolha seu Líder</div>
-                <div className="grid grid-cols-3 gap-2">
+              <div className="flex-1 min-h-0 overflow-y-auto rounded-2xl glass-panel p-4">
+                <div className="text-[10px] uppercase tracking-[0.25em] text-gold mb-3">Escolha seu Líder</div>
+                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
                   {LEADERS.map((l) => {
                     const active = l.id === leaderId;
                     return (
@@ -199,23 +199,23 @@ function WaitingRoom() {
                         whileTap={{ scale: 0.95 }}
                         onClick={() => { setLeaderId(l.id); setSheetLeader(l.id); }}
                         className={cn(
-                          "relative rounded-2xl p-2 text-center transition-all",
+                          "relative rounded-2xl p-2.5 text-center transition-all",
                           active ? "ring-2 ring-gold glow-gold bg-gold/10" : "glass-panel",
                         )}
                       >
                         <div
-                          className="relative mx-auto h-14 w-14 overflow-hidden rounded-full p-[3px]"
+                          className="relative mx-auto h-[76px] w-[76px] overflow-hidden rounded-full p-[3px]"
                           style={{ background: `linear-gradient(135deg, ${l.frameColor}, oklch(0.30 0.05 260))` }}
                         >
                           <img src={l.portrait} alt={l.name} width={128} height={128} loading="lazy"
                             className="h-full w-full rounded-full object-cover" />
                           {active && (
                             <div className="absolute -top-1 -right-1 rounded-full bg-gold p-0.5">
-                              <Check className="h-2.5 w-2.5 text-primary-foreground" />
+                              <Check className="h-3 w-3 text-primary-foreground" />
                             </div>
                           )}
                         </div>
-                        <div className="mt-1.5 font-display text-[11px] font-semibold text-foreground leading-tight line-clamp-2">
+                        <div className="mt-2 font-display text-[12px] font-semibold text-foreground leading-tight line-clamp-2">
                           {l.name}
                         </div>
                       </motion.button>
@@ -231,7 +231,7 @@ function WaitingRoom() {
                   return (
                     <>
                       <img src={l.portrait} alt={l.name}
-                        className="h-9 w-9 rounded-full border border-gold/50 object-cover shrink-0" />
+                        className="h-12 w-12 rounded-full border border-gold/50 object-cover shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="font-display text-sm text-gold-gradient truncate">{l.name}</div>
                         <div className="text-[10px] text-muted-foreground truncate">

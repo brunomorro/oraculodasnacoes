@@ -359,9 +359,9 @@ function MultiplayerGame() {
           )}
 
           {/* Center — comparison cards */}
-          <div className="absolute inset-[20%] z-20 flex flex-col items-center justify-center gap-2 pointer-events-none overflow-hidden">
+          <div className="absolute inset-x-[20%] inset-y-[5%] z-20 flex flex-col items-center justify-center gap-2 pointer-events-none">
             <AnimatePresence mode="wait">
-              {(revealing || gs.phase === "revealing") ? (
+              {gs.phase === "revealing" ? (
                 /* Current round being revealed — show all players' top cards */
                 <motion.div
                   key={"rev-" + gs.roundNumber}
