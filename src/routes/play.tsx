@@ -252,8 +252,51 @@ function Play() {
           {/* z-20 keeps this above the human block (z-10) on every screen size. */}
           <div className="absolute inset-[20%] z-20 flex flex-col items-center justify-center gap-2 pointer-events-none overflow-hidden">
             <AnimatePresence mode="wait">
-              {state.lastRound ? (
-                /* Comparison cards — revealed cards from the last round */
+              {state.phase === "revealing" && state.revealAttribute ? (
+                /* Current round being revealed — show all players' top cards */
+                <motion.div
+                  key={"rev-" + state.roundNumber}
+                  initial={{ opacity: 0, scale: 0.88, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.75, transition: { duration: 0.28 } }}
+                  transition={{ type: "spring", stiffness: 240, damping: 22 }}
+                  className="flex flex-col items-center gap-1.5 w-full"
+                >
+                  {(() => {
+                    const alive = state.players.filter((p) => p.deck.length > 0);
+                    const n = alive.length;
+                    const ovalPx = Math.min(
+                      window.innerWidth * 0.98,
+                      (window.innerHeight - 300) * 2.8,
+                    );
+                    const centerW = ovalPx * 0.60;
+                    const neededW = n * 130 + (n - 1) * 6;
+                    const scale = Math.min(1, centerW / neededW);
+                    return (
+                      <div style={{ transform: `scale(${scale})`, transformOrigin: "center center" }}>
+                        <div className="flex flex-nowrap items-end justify-center gap-1.5">
+                          {alive.map((p, idx) => (
+                            <CountryCard
+                              key={p.id}
+                              country={p.deck[0]}
+                              highlightedAttr={state.revealAttribute}
+                              size="sm"
+                              flipIn
+                              revealDelay={0.08 * idx}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  {state.pot.length > 0 && (
+                    <div className="text-[9px] font-sans uppercase tracking-widest text-gold/70">
+                      Pote · {state.pot.length}
+                    </div>
+                  )}
+                </motion.div>
+              ) : state.lastRound ? (
+                /* Comparison cards — result from the last round */
                 <motion.div
                   key={"cmp-" + state.roundNumber}
                   initial={{ opacity: 0, scale: 0.88, y: 10 }}
@@ -265,12 +308,10 @@ function Play() {
                   {(() => {
                     const reveals = state.lastRound.reveals;
                     const n = reveals.length;
-                    // Mirror ovalWidth formula to get pixel width
                     const ovalPx = Math.min(
                       window.innerWidth * 0.98,
                       (window.innerHeight - 300) * 2.8,
                     );
-                    // inset-[20%] = 60% of oval width
                     const centerW = ovalPx * 0.60;
                     const neededW = n * 130 + (n - 1) * 6;
                     const scale = Math.min(1, centerW / neededW);

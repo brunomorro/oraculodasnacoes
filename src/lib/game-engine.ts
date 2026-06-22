@@ -27,6 +27,7 @@ export interface GameState {
   lastRound: RoundResult | null;
   roundNumber: number;
   winnerId: string | null;
+  revealAttribute: Attribute | null;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -54,6 +55,7 @@ export function dealGame(players: Omit<Player, "deck" | "score">[]): GameState {
     lastRound: null,
     roundNumber: 1,
     winnerId: null,
+    revealAttribute: null,
   };
 }
 
@@ -61,10 +63,14 @@ export function compareAttribute(
   attribute: Attribute,
   players: Player[],
 ): { winnerId: string | null } {
-  const attrDef = ATTRIBUTES.find((a) => a.key === attribute)!;
   const alive = players.filter((p) => p.deck.length > 0);
   if (alive.length === 0) return { winnerId: null };
-  const values = alive.map((p) => ({ id: p.id, v: p.deck[0][attribute] }));
+  // Super Trunfo wins automatically regardless of attribute
+  const superTrunfos = alive.filter((p) => p.deck[0].isSuperTrunfo);
+  if (superTrunfos.length === 1) return { winnerId: superTrunfos[0].id };
+  if (superTrunfos.length > 1) return { winnerId: null }; // tie between super cards
+  const attrDef = ATTRIBUTES.find((a) => a.key === attribute)!;
+  const values = alive.map((p) => ({ id: p.id, v: p.deck[0][attribute] as number }));
   const best = attrDef.higherIsBetter
     ? Math.max(...values.map((x) => x.v))
     : Math.min(...values.map((x) => x.v));
@@ -120,6 +126,7 @@ export function playRound(state: GameState, attribute: Attribute): GameState {
     },
     roundNumber: state.roundNumber + 1,
     winnerId: gameWinner,
+    revealAttribute: null,
   };
 }
 

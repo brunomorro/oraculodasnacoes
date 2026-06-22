@@ -9,6 +9,7 @@ export interface Country {
   juros: number; // % a.a.
   inflacao: number; // % a.a.
   divida: number; // % PIB
+  isSuperTrunfo?: boolean;
 }
 
 export const ATTRIBUTES: { key: Attribute; label: string; short: string; higherIsBetter: boolean; suffix: string }[] = [
@@ -25,7 +26,7 @@ function flag(code: string): string {
 }
 
 const RAW: Omit<Country, "flag">[] = [
-  { id: 1,  code: "BR", name: "Brasil",           pib: 2.17,  juros: 14.75, inflacao: 4.5,  divida: 35 },
+  { id: 1,  code: "BR", name: "O Tesouro de Midas", pib: 2.17, juros: 14.75, inflacao: 4.5,  divida: 35, isSuperTrunfo: true },
   { id: 2,  code: "US", name: "Estados Unidos",   pib: 27.72, juros: 4.5,   inflacao: 3.0,  divida: 95 },
   { id: 3,  code: "CN", name: "China",            pib: 17.80, juros: 3.1,   inflacao: 0.3,  divida: 14 },
   { id: 4,  code: "DE", name: "Alemanha",         pib: 4.50,  juros: 3.65,  inflacao: 2.2,  divida: 156 },

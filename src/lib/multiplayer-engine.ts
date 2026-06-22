@@ -43,17 +43,24 @@ export function resolveRound(state: MPGameState, attribute: Attribute): MPGameSt
     cardId: p.deckIds[0],
   }));
 
-  const values = reveals.map((r) => ({
-    playerId: r.playerId,
-    v: COUNTRIES.find((c) => c.id === r.cardId)![attribute] as number,
-  }));
-
-  const best = attrDef.higherIsBetter
-    ? Math.max(...values.map((x) => x.v))
-    : Math.min(...values.map((x) => x.v));
-
-  const winners = values.filter((x) => x.v === best);
-  const winnerId = winners.length === 1 ? winners[0].playerId : null;
+  // Super Trunfo wins automatically
+  const superTrunfos = reveals.filter((r) => COUNTRIES.find((c) => c.id === r.cardId)?.isSuperTrunfo);
+  let winnerId: string | null;
+  if (superTrunfos.length === 1) {
+    winnerId = superTrunfos[0].playerId;
+  } else if (superTrunfos.length > 1) {
+    winnerId = null;
+  } else {
+    const values = reveals.map((r) => ({
+      playerId: r.playerId,
+      v: COUNTRIES.find((c) => c.id === r.cardId)![attribute] as number,
+    }));
+    const best = attrDef.higherIsBetter
+      ? Math.max(...values.map((x) => x.v))
+      : Math.min(...values.map((x) => x.v));
+    const winners = values.filter((x) => x.v === best);
+    winnerId = winners.length === 1 ? winners[0].playerId : null;
+  }
 
   const stakeIds = reveals.map((r) => r.cardId);
   const newPot = [...state.pot, ...stakeIds];

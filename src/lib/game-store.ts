@@ -101,7 +101,7 @@ export const useGame = create<GameStore>((set, get) => ({
   play: (attribute) => {
     const s = get().state;
     if (!s) return;
-    set({ state: { ...s, phase: "revealing" } });
+    set({ state: { ...s, phase: "revealing", revealAttribute: attribute } });
     const gen = _gameGen;
     setTimeout(() => {
       if (_gameGen !== gen) return; // game was reset or restarted — discard

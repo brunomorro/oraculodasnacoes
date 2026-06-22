@@ -57,9 +57,12 @@ export function CountryCard({
       style={{ transformStyle: "preserve-3d", perspective: 800 }}
       className={cn(
         "relative shrink-0 flex flex-col overflow-hidden rounded-2xl",
-        "bg-gradient-to-b from-[oklch(0.24_0.07_258)] to-[oklch(0.17_0.05_256)]",
-        "border border-[oklch(0.80_0.14_85/0.35)]",
-        "shadow-[0_0_0_1px_oklch(0.80_0.14_85/0.12),0_8px_32px_-8px_oklch(0_0_0/0.7)]",
+        country.isSuperTrunfo
+          ? "bg-gradient-to-b from-[oklch(0.26_0.09_75)] to-[oklch(0.18_0.07_75)]"
+          : "bg-gradient-to-b from-[oklch(0.24_0.07_258)] to-[oklch(0.17_0.05_256)]",
+        country.isSuperTrunfo
+          ? "border-2 border-[oklch(0.82_0.15_85/0.9)] shadow-[0_0_0_2px_oklch(0.82_0.15_85/0.25),0_0_32px_-4px_oklch(0.82_0.15_85/0.5),0_8px_32px_-8px_oklch(0_0_0/0.7)]"
+          : "border border-[oklch(0.80_0.14_85/0.35)] shadow-[0_0_0_1px_oklch(0.80_0.14_85/0.12),0_8px_32px_-8px_oklch(0_0_0/0.7)]",
         cardW,
         isWinner &&
           "ring-2 ring-[oklch(0.74_0.18_150)] shadow-[0_0_24px_-4px_oklch(0.74_0.18_150/0.6)] animate-pulse-gold",
@@ -98,12 +101,21 @@ export function CountryCard({
       <div className="px-3 pt-1.5 pb-1 border-b border-[oklch(0.80_0.14_85/0.18)]">
         <h3
           className={cn(
-            "text-center font-display font-semibold tracking-wide text-[oklch(0.96_0.01_250)] leading-tight",
+            "text-center font-display font-semibold tracking-wide leading-tight",
+            country.isSuperTrunfo ? "text-[oklch(0.92_0.14_85)]" : "text-[oklch(0.96_0.01_250)]",
             isLg ? "text-xl" : isSm ? "text-sm" : "text-base",
           )}
         >
           {country.name}
         </h3>
+        {country.isSuperTrunfo && (
+          <div className={cn(
+            "mt-0.5 text-center font-sans font-bold uppercase tracking-[0.18em] text-[oklch(0.82_0.15_85)]",
+            isSm ? "text-[7px]" : "text-[8px]",
+          )}>
+            ✦ Super Trunfo ✦
+          </div>
+        )}
       </div>
 
       {/* Highlighted attribute callout — animates glow on reveal */}
