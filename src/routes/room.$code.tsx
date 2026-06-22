@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Copy, Crown, Users } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useIsMobile } from "@/lib/use-is-mobile";
 import { MapBackground } from "@/components/MapBackground";
 import { LeaderBadge } from "@/components/LeaderBadge";
 import { supabase } from "@/lib/supabase";
@@ -140,6 +141,7 @@ function WaitingRoom() {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  const isMobile = useIsMobile();
   const me = players.find((p) => p.player_id === playerId);
   const allReady = players.length > 1 && players.every((p) => p.is_ready || p.is_host);
   const sheetLeaderData = sheetLeader ? LEADERS.find(l => l.id === sheetLeader) : null;
@@ -149,7 +151,7 @@ function WaitingRoom() {
   return (
     <>
       <MapBackground />
-      <main className="relative mx-auto flex h-screen max-w-2xl flex-col px-4 pt-6 pb-6 gap-4 overflow-hidden">
+      <main className="relative mx-auto flex h-screen max-w-5xl flex-col px-4 pt-6 pb-6 gap-4 overflow-hidden">
 
         {/* Header — código da sala */}
         <div className="text-center shrink-0">
@@ -176,71 +178,98 @@ function WaitingRoom() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              className="flex flex-col gap-3 flex-1 min-h-0"
+              className="flex flex-col gap-4 flex-1 min-h-0"
             >
-              {/* Campo de nome */}
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Seu nome"
-                maxLength={18}
-                className="w-full rounded-xl border border-gold/30 bg-background/40 px-4 py-3 text-base text-foreground placeholder:text-muted-foreground focus:border-gold focus:outline-none shrink-0"
-              />
+              {/* Two-column on desktop, stacked on mobile */}
+              <div className="grid gap-4 lg:grid-cols-[1fr_300px] flex-1 min-h-0">
 
-              {/* Grade de líderes — mesmo formato do avatar-select */}
-              <div className="flex-1 min-h-0 overflow-y-auto rounded-2xl glass-panel p-4">
-                <div className="text-[10px] uppercase tracking-[0.25em] text-gold mb-3">Escolha seu Líder</div>
-                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+                {/* Left: leader grid */}
+                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 content-start overflow-y-auto px-1 pt-1 pb-2">
                   {LEADERS.map((l) => {
                     const active = l.id === leaderId;
                     return (
                       <motion.button
                         key={l.id}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => { setLeaderId(l.id); setSheetLeader(l.id); }}
+                        whileHover={{ y: -3 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => { setLeaderId(l.id); if (isMobile) setSheetLeader(l.id); }}
                         className={cn(
-                          "relative rounded-2xl p-2.5 text-center transition-all",
-                          active ? "ring-2 ring-gold glow-gold bg-gold/10" : "glass-panel",
+                          "group relative overflow-hidden rounded-2xl glass-panel p-2.5 text-left transition-all",
+                          active && "ring-2 ring-gold glow-gold",
                         )}
                       >
                         <div
-                          className="relative mx-auto h-[76px] w-[76px] overflow-hidden rounded-full p-[3px]"
+                          className="relative mx-auto h-20 w-20 overflow-hidden rounded-full p-[3px] sm:h-24 sm:w-24"
                           style={{ background: `linear-gradient(135deg, ${l.frameColor}, oklch(0.30 0.05 260))` }}
                         >
-                          <img src={l.portrait} alt={l.name} width={128} height={128} loading="lazy"
+                          <img src={l.portrait} alt={l.name} width={256} height={256} loading="lazy"
                             className="h-full w-full rounded-full object-cover" />
                           {active && (
-                            <div className="absolute -top-1 -right-1 rounded-full bg-gold p-0.5">
+                            <div className="absolute -top-1 -right-1 rounded-full bg-gold p-1">
                               <Check className="h-3 w-3 text-primary-foreground" />
                             </div>
                           )}
                         </div>
-                        <div className="mt-2 font-display text-[12px] font-semibold text-foreground leading-tight line-clamp-2">
-                          {l.name}
+                        <div className="mt-2 text-center">
+                          <div className="font-display text-base font-semibold text-foreground leading-tight">{l.name}</div>
                         </div>
                       </motion.button>
                     );
                   })}
                 </div>
+
+                {/* Right: detail panel (desktop only) */}
+                <aside className="hidden lg:flex flex-col gap-3 rounded-2xl glass-panel p-4 min-h-0 overflow-hidden">
+                  <div className="text-center shrink-0">
+                    <img
+                      src={LEADERS.find(l => l.id === leaderId)!.portrait}
+                      alt={LEADERS.find(l => l.id === leaderId)!.name}
+                      width={400} height={400}
+                      className="mx-auto h-28 w-28 rounded-2xl border-2 border-gold/50 object-cover glow-gold"
+                    />
+                    <div className="mt-2 font-display text-2xl text-gold-gradient">
+                      {LEADERS.find(l => l.id === leaderId)!.name}
+                    </div>
+                  </div>
+                  <p className="text-xs leading-relaxed text-foreground/85 overflow-y-auto flex-1 min-h-0">
+                    {LEADERS.find(l => l.id === leaderId)!.bio.replace(/ — /g, " ")}
+                  </p>
+                  <div className="shrink-0 space-y-3">
+                    <label className="block">
+                      <span className="mb-1 block text-[10px] font-sans uppercase tracking-widest text-muted-foreground">Seu nome</span>
+                      <input
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        maxLength={18}
+                        placeholder="Como quer ser chamado?"
+                        className="w-full rounded-lg border border-gold/30 bg-background/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-gold focus:outline-none"
+                      />
+                    </label>
+                    <button
+                      onClick={joinRoom}
+                      disabled={!name.trim()}
+                      className="w-full rounded-xl bg-gradient-to-b from-gold to-gold-soft px-4 py-2.5 font-sans text-sm font-bold uppercase tracking-widest text-primary-foreground shadow-[0_8px_24px_-8px_oklch(0.80_0.14_85/0.6)] disabled:opacity-50 hover:brightness-110 transition"
+                    >
+                      Entrar na Sala
+                    </button>
+                  </div>
+                </aside>
               </div>
 
-              {/* Líder selecionado + botão entrar */}
-              <div className="shrink-0 flex items-center gap-3 rounded-xl glass-panel px-3 py-2.5">
-                {leaderId && (() => {
-                  const l = LEADERS.find(x => x.id === leaderId)!;
-                  return (
-                    <>
-                      <img src={l.portrait} alt={l.name}
-                        className="h-12 w-12 rounded-full border border-gold/50 object-cover shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="font-display text-sm text-gold-gradient truncate">{l.name}</div>
-                        <div className="text-[10px] text-muted-foreground truncate">
-                          {l.bio.replace(/ — /g, " ").slice(0, 50)}…
-                        </div>
-                      </div>
-                    </>
-                  );
-                })()}
+              {/* Mobile bottom bar */}
+              <div className="lg:hidden shrink-0 flex items-center gap-2 rounded-xl glass-panel px-3 py-2.5">
+                <img
+                  src={LEADERS.find(l => l.id === leaderId)!.portrait}
+                  alt={LEADERS.find(l => l.id === leaderId)!.name}
+                  className="h-10 w-10 rounded-full border border-gold/50 object-cover shrink-0"
+                />
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Seu nome"
+                  maxLength={18}
+                  className="flex-1 min-w-0 rounded-lg border border-gold/30 bg-background/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-gold focus:outline-none"
+                />
                 <button
                   onClick={joinRoom}
                   disabled={!name.trim()}
