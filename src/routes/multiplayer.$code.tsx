@@ -110,7 +110,7 @@ function MultiplayerGame() {
     pickedRef.current = true;
 
     // Write revealing phase immediately so all players see it
-    const revealingState: MPGameState = { ...currentGs, phase: "revealing" };
+    const revealingState: MPGameState = { ...currentGs, phase: "revealing", revealAttribute: attr };
     await supabase.from("rooms").update({ game_state: revealingState }).eq("id", currentRoom.id);
 
     // Resolve after delay
@@ -193,33 +193,23 @@ function MultiplayerGame() {
             </div>
           ) : me && myCard ? (
             <AnimatePresence mode="wait">
-              {gs.phase === "revealing" && gs.lastRound ? (
-                // Show comparison during reveal
-                <motion.div key="reveal" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+              {gs.phase === "revealing" ? (
+                // Show current round's cards during reveal
+                <motion.div key={"rev-" + gs.roundNumber} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
                   className="flex flex-col items-center gap-3 w-full">
                   <div className="flex flex-wrap justify-center gap-2">
-                    {gs.lastRound.reveals.map((r) => {
-                      const country = COUNTRIES.find((c) => c.id === r.cardId)!;
-                      const isW = r.playerId === gs.lastRound!.winnerId;
-                      const isL = gs.lastRound!.winnerId !== null && !isW;
+                    {gs.players.filter(p => p.deckIds.length > 0).map((p) => {
+                      const country = COUNTRIES.find((c) => c.id === p.deckIds[0])!;
                       return (
-                        <div key={r.playerId} className="flex flex-col items-center gap-1">
+                        <div key={p.playerId} className="flex flex-col items-center gap-1">
                           <span className="text-[10px] text-muted-foreground uppercase tracking-widest truncate max-w-[100px]">
-                            {r.playerId === playerId ? "Você" : gs.players.find(p => p.playerId === r.playerId)?.name}
+                            {p.playerId === playerId ? "Você" : p.name}
                           </span>
-                          <CountryCard country={country} highlightedAttr={gs.lastRound!.attribute}
-                            isWinner={isW} isLoser={isL} size="sm" flipIn revealDelay={0} />
+                          <CountryCard country={country} highlightedAttr={gs.revealAttribute} size="sm" flipIn revealDelay={0} />
                         </div>
                       );
                     })}
                   </div>
-                  {gs.lastRound.winnerId && (
-                    <div className={cn("rounded-xl px-4 py-2 font-bold text-sm",
-                      gs.lastRound.winnerId === playerId ? "bg-positive/20 text-positive border border-positive/50"
-                        : "bg-negative/20 text-negative border border-negative/50")}>
-                      {gs.lastRound.winnerId === playerId ? "Você venceu a rodada!" : `${gs.players.find(p => p.playerId === gs.lastRound!.winnerId)?.name} venceu`}
-                    </div>
-                  )}
                 </motion.div>
               ) : (
                 <motion.div key="mycard" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
@@ -371,7 +361,46 @@ function MultiplayerGame() {
           {/* Center — comparison cards */}
           <div className="absolute inset-[20%] z-20 flex flex-col items-center justify-center gap-2 pointer-events-none overflow-hidden">
             <AnimatePresence mode="wait">
-              {gs.lastRound && (revealing || gs.phase === "revealing") ? (
+              {(revealing || gs.phase === "revealing") ? (
+                /* Current round being revealed — show all players' top cards */
+                <motion.div
+                  key={"rev-" + gs.roundNumber}
+                  initial={{ opacity: 0, scale: 0.88, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.75, transition: { duration: 0.28 } }}
+                  transition={{ type: "spring", stiffness: 240, damping: 22 }}
+                  className="flex flex-col items-center gap-1.5 w-full"
+                >
+                  {(() => {
+                    const alive = gs.players.filter((p) => p.deckIds.length > 0);
+                    const n = alive.length;
+                    const ovalPx = Math.min(window.innerWidth * 0.98, (window.innerHeight - 300) * 2.8);
+                    const centerW = ovalPx * 0.60;
+                    const neededW = n * 130 + (n - 1) * 6;
+                    const scale = Math.min(1, centerW / neededW);
+                    return (
+                      <div style={{ transform: `scale(${scale})`, transformOrigin: "center center" }}>
+                        <div className="flex flex-nowrap items-end justify-center gap-1.5">
+                          {alive.map((p, idx) => {
+                            const country = COUNTRIES.find((c) => c.id === p.deckIds[0])!;
+                            return (
+                              <CountryCard
+                                key={p.playerId}
+                                country={country}
+                                highlightedAttr={gs.revealAttribute}
+                                size="sm"
+                                flipIn
+                                revealDelay={0.08 * idx}
+                              />
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </motion.div>
+              ) : gs.lastRound ? (
+                /* Previous round result */
                 <motion.div
                   key={"cmp-" + gs.roundNumber}
                   initial={{ opacity: 0, scale: 0.88, y: 10 }}

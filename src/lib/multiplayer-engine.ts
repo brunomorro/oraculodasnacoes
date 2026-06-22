@@ -31,6 +31,7 @@ export function dealMultiplayerGame(roomPlayers: RoomPlayer[]): MPGameState {
     pot: [],
     lastRound: null,
     winnerId: null,
+    revealAttribute: null,
   };
 }
 
@@ -97,5 +98,6 @@ export function resolveRound(state: MPGameState, attribute: Attribute): MPGameSt
     pot: winnerId ? [] : newPot,
     lastRound: { attribute, reveals, winnerId },
     winnerId: gameWinnerId,
+    revealAttribute: null,
   };
 }

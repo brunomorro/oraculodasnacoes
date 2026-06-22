@@ -34,6 +34,7 @@ export interface MPGameState {
   pot: number[];           // country IDs in pot
   lastRound: MPRoundResult | null;
   winnerId: string | null;
+  revealAttribute: Attribute | null;
 }
 
 export interface Room {
