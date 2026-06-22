@@ -1,6 +1,6 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Copy, Crown, Users } from "lucide-react";
+import { ArrowLeft, Check, Copy, Crown, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useIsMobile } from "@/lib/use-is-mobile";
 import { MapBackground } from "@/components/MapBackground";
@@ -153,7 +153,15 @@ function WaitingRoom() {
       <MapBackground />
       <main className="relative mx-auto flex h-screen max-w-5xl flex-col px-4 pt-6 pb-6 gap-4 overflow-hidden">
 
-        {/* Header — código da sala */}
+        {/* Header */}
+        <div className="shrink-0 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground hover:text-gold transition-colors">
+            <ArrowLeft className="h-4 w-4" /> Início
+          </Link>
+          <div className="w-16" />
+        </div>
+
+        {/* Código da sala */}
         <div className="text-center shrink-0">
           <div className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground mb-1">Código da Sala</div>
           <div className="font-display text-5xl tracking-[0.4em] text-gold-gradient">{code}</div>
