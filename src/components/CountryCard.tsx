@@ -108,14 +108,6 @@ export function CountryCard({
         >
           {country.name}
         </h3>
-        {country.isSuperTrunfo && (
-          <div className={cn(
-            "mt-0.5 text-center font-sans font-bold uppercase tracking-[0.18em] text-[oklch(0.82_0.15_85)]",
-            isSm ? "text-[7px]" : "text-[8px]",
-          )}>
-            ✦ Super Trunfo ✦
-          </div>
-        )}
       </div>
 
       {/* Highlighted attribute callout — animates glow on reveal */}

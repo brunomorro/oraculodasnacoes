@@ -68,7 +68,7 @@ export function compareAttribute(
   // Super Trunfo wins automatically regardless of attribute
   const superTrunfos = alive.filter((p) => p.deck[0].isSuperTrunfo);
   if (superTrunfos.length === 1) return { winnerId: superTrunfos[0].id };
-  if (superTrunfos.length > 1) return { winnerId: null }; // tie between super cards
+  if (superTrunfos.length > 1) return { winnerId: null };
   const attrDef = ATTRIBUTES.find((a) => a.key === attribute)!;
   const values = alive.map((p) => ({ id: p.id, v: p.deck[0][attribute] as number }));
   const best = attrDef.higherIsBetter

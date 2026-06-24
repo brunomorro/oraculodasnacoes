@@ -13,6 +13,7 @@ const RULES = [
   "Quem tiver o valor mais alto (ou mais baixo, dependendo do atributo) vence a rodada e leva todas as cartas.",
   "Empate? As cartas vão para o pote — quem vencer a próxima rodada leva tudo.",
   "O último jogador com cartas vence o jogo.",
+  "Carta especial: O Tesouro de Midas vence qualquer atributo, independentemente dos valores — é a carta mais poderosa do baralho.",
 ];
 
 export const Route = createFileRoute("/")({
