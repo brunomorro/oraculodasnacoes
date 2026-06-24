@@ -178,87 +178,90 @@ function MultiplayerGame() {
           })}
         </div>
 
-        {/* Minha carta — centro */}
-        <div className="relative z-10 flex-1 min-h-0 flex flex-col items-center justify-center px-4 gap-3">
-          {gs.winnerId ? (
-            <div className="flex flex-col items-center gap-3 text-center">
-              <Crown className="h-14 w-14 text-gold" />
-              <div className="font-display text-3xl text-gold-gradient">
-                {gs.winnerId === playerId ? "Você venceu!" : `${gs.players.find(p => p.playerId === gs.winnerId)?.name} venceu!`}
+        {/* Main area — meu personagem + carta à esquerda, adversários à direita */}
+        <div className="relative z-10 flex-1 min-h-0 flex">
+
+          {/* Centro: meu personagem + carta (ou estado especial) */}
+          <div className="flex-1 flex flex-col items-center justify-center px-3 gap-2">
+            {gs.winnerId ? (
+              <div className="flex flex-col items-center gap-3 text-center">
+                <Crown className="h-14 w-14 text-gold" />
+                <div className="font-display text-3xl text-gold-gradient">
+                  {gs.winnerId === playerId ? "Você venceu!" : `${gs.players.find(p => p.playerId === gs.winnerId)?.name} venceu!`}
+                </div>
               </div>
-            </div>
-          ) : isSpectating ? (
-            <div className="flex flex-col items-center gap-2 text-center">
-              <Eye className="h-8 w-8 text-accent" />
-              <div className="font-sans text-sm text-accent uppercase tracking-widest">Você foi eliminado</div>
-            </div>
-          ) : me && myCard ? (
-            <AnimatePresence mode="wait">
-              {gs.phase === "revealing" ? (
-                // Show current round's cards during reveal
-                <motion.div key={"rev-" + gs.roundNumber} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
-                  className="flex flex-col items-center gap-3 w-full">
-                  <div className="flex flex-wrap justify-center gap-2">
-                    {gs.players.filter(p => p.deckIds.length > 0).map((p) => {
-                      const country = COUNTRIES.find((c) => c.id === p.deckIds[0])!;
+            ) : isSpectating ? (
+              <div className="flex flex-col items-center gap-2 text-center">
+                <Eye className="h-8 w-8 text-accent" />
+                <div className="font-sans text-sm text-accent uppercase tracking-widest">Você foi eliminado</div>
+              </div>
+            ) : me && myCard ? (
+              <AnimatePresence mode="wait">
+                {gs.phase === "revealing" ? (
+                  <motion.div key={"rev-" + gs.roundNumber} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+                    className="flex flex-col items-center gap-3 w-full">
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {gs.players.filter(p => p.deckIds.length > 0).map((p) => {
+                        const country = COUNTRIES.find((c) => c.id === p.deckIds[0])!;
+                        return (
+                          <div key={p.playerId} className="flex flex-col items-center gap-1">
+                            <span className="text-[10px] text-muted-foreground uppercase tracking-widest truncate max-w-[80px]">
+                              {p.playerId === playerId ? "Você" : p.name}
+                            </span>
+                            <CountryCard country={country} highlightedAttr={gs.revealAttribute} size="sm" flipIn revealDelay={0} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div key="mycard" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+                    className="flex flex-col items-center gap-2">
+                    {/* Meu personagem */}
+                    {(() => {
+                      const leader = getLeader(me.leaderId);
                       return (
-                        <div key={p.playerId} className="flex flex-col items-center gap-1">
-                          <span className="text-[10px] text-muted-foreground uppercase tracking-widest truncate max-w-[100px]">
-                            {p.playerId === playerId ? "Você" : p.name}
-                          </span>
-                          <CountryCard country={country} highlightedAttr={gs.revealAttribute} size="sm" flipIn revealDelay={0} />
+                        <div className="flex flex-col items-center gap-1">
+                          <motion.div
+                            animate={isMyTurn ? { scale: [1, 1.05, 1], boxShadow: ["0 0 0px 0px oklch(0.82 0.15 85/0)", "0 0 18px 6px oklch(0.82 0.15 85/0.6)", "0 0 0px 0px oklch(0.82 0.15 85/0)"] } : {}}
+                            transition={{ duration: 1.6, repeat: isMyTurn ? Infinity : 0, ease: "easeInOut" }}
+                            className="h-16 w-16 overflow-hidden rounded-full p-[3px]"
+                            style={{ background: `linear-gradient(135deg, ${leader.frameColor}, oklch(0.30 0.05 260))` }}
+                          >
+                            <img src={leader.portrait} alt={leader.name}
+                              className="h-full w-full rounded-full object-cover" />
+                          </motion.div>
+                          <div className="font-display text-xs text-gold-gradient">{leader.name}</div>
                         </div>
                       );
-                    })}
-                  </div>
-                </motion.div>
-              ) : (
-                <motion.div key="mycard" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-                  className="flex flex-col items-center gap-2">
-                  {/* Leader avatar above the card */}
-                  {(() => {
-                    const leader = getLeader(me.leaderId);
-                    return (
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="h-10 w-10 overflow-hidden rounded-full p-[2px] shrink-0"
-                          style={{ background: `linear-gradient(135deg, ${leader.frameColor}, oklch(0.30 0.05 260))` }}
-                        >
-                          <img src={leader.portrait} alt={leader.name}
-                            className="h-full w-full rounded-full object-cover" />
-                        </div>
-                        <div className="text-left">
-                          <div className="font-display text-sm text-gold-gradient leading-tight">{leader.name}</div>
-                          <div className="text-[10px] text-muted-foreground uppercase tracking-widest">
-                            {isMyTurn ? "Sua vez — escolha um atributo" : `Vez de ${currentPlayer?.name}`}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                  <CountryCard country={myCard} selectable={canPlay} onSelectAttribute={pickAttribute} size="md" />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          ) : null}
-        </div>
+                    })()}
+                    <CountryCard country={myCard} selectable={canPlay} onSelectAttribute={pickAttribute} size="md" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            ) : null}
+          </div>
 
-        {/* Outros jogadores — barra inferior */}
-        <div className="relative z-10 shrink-0 border-t border-gold/20 bg-background/50 backdrop-blur-md px-3 py-3">
-          <div className="flex justify-center gap-3 overflow-x-auto scrollbar-none">
+          {/* Coluna direita: adversários */}
+          <div className="w-[72px] flex flex-col items-center justify-center gap-4 py-3 shrink-0">
             {others.map((p) => {
               const isActive = gs.currentPlayerId === p.playerId;
               const eliminated = p.deckIds.length === 0 && !gs.winnerId;
               return (
-                <div key={p.playerId} className={cn("flex flex-col items-center gap-1 shrink-0 transition",
-                  eliminated && "opacity-30")}>
+                <div key={p.playerId} className={cn("flex flex-col items-center gap-0.5 transition", eliminated && "opacity-30")}>
                   <LeaderBadge leaderId={p.leaderId} name={p.name}
                     cardsLeft={p.deckIds.length} active={isActive}
                     winner={gs.winnerId === p.playerId} size="sm" />
+                  {isActive && !gs.winnerId && (
+                    <div className="text-[8px] font-sans font-bold uppercase tracking-widest text-gold animate-pulse text-center leading-tight">
+                      Vez
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
+
         </div>
 
         {/* Turn indicator */}
