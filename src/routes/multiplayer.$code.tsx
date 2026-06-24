@@ -6,6 +6,7 @@ import { CardBack, CountryCard } from "@/components/CountryCard";
 import { LeaderBadge } from "@/components/LeaderBadge";
 import { MapBackground } from "@/components/MapBackground";
 import { COUNTRIES, type Attribute } from "@/lib/countries";
+import { getLeader } from "@/lib/leaders";
 import { supabase } from "@/lib/supabase";
 import { resolveRound } from "@/lib/multiplayer-engine";
 import type { MPGameState, MPPlayer, Room } from "@/lib/multiplayer-types";
@@ -213,13 +214,29 @@ function MultiplayerGame() {
                 </motion.div>
               ) : (
                 <motion.div key="mycard" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-                  className="flex flex-col items-center gap-3">
+                  className="flex flex-col items-center gap-2">
+                  {/* Leader avatar above the card */}
+                  {(() => {
+                    const leader = getLeader(me.leaderId);
+                    return (
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="h-10 w-10 overflow-hidden rounded-full p-[2px] shrink-0"
+                          style={{ background: `linear-gradient(135deg, ${leader.frameColor}, oklch(0.30 0.05 260))` }}
+                        >
+                          <img src={leader.portrait} alt={leader.name}
+                            className="h-full w-full rounded-full object-cover" />
+                        </div>
+                        <div className="text-left">
+                          <div className="font-display text-sm text-gold-gradient leading-tight">{leader.name}</div>
+                          <div className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                            {isMyTurn ? "Sua vez — escolha um atributo" : `Vez de ${currentPlayer?.name}`}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                   <CountryCard country={myCard} selectable={canPlay} onSelectAttribute={pickAttribute} size="md" />
-                  {!isMyTurn && (
-                    <div className="text-sm text-muted-foreground/60 uppercase tracking-widest font-sans">
-                      Vez de {currentPlayer?.name}
-                    </div>
-                  )}
                 </motion.div>
               )}
             </AnimatePresence>

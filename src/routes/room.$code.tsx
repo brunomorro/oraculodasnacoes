@@ -202,16 +202,18 @@ function WaitingRoom() {
                         whileTap={{ scale: 0.97 }}
                         onClick={() => { setLeaderId(l.id); if (isMobile) setSheetLeader(l.id); }}
                         className={cn(
-                          "group relative overflow-hidden rounded-2xl glass-panel p-2.5 text-left transition-all",
+                          "group relative rounded-2xl glass-panel p-2.5 text-left transition-all",
                           active && "ring-2 ring-gold glow-gold",
                         )}
                       >
-                        <div
-                          className="relative mx-auto h-20 w-20 overflow-hidden rounded-full p-[3px] sm:h-24 sm:w-24"
-                          style={{ background: `linear-gradient(135deg, ${l.frameColor}, oklch(0.30 0.05 260))` }}
-                        >
-                          <img src={l.portrait} alt={l.name} width={256} height={256} loading="lazy"
-                            className="h-full w-full rounded-full object-cover" />
+                        <div className="relative mx-auto w-fit">
+                          <div
+                            className="h-20 w-20 overflow-hidden rounded-full p-[3px] sm:h-24 sm:w-24"
+                            style={{ background: `linear-gradient(135deg, ${l.frameColor}, oklch(0.30 0.05 260))` }}
+                          >
+                            <img src={l.portrait} alt={l.name} width={256} height={256} loading="lazy"
+                              className="h-full w-full rounded-full object-cover" />
+                          </div>
                           {active && (
                             <div className="absolute -top-1 -right-1 rounded-full bg-gold p-1">
                               <Check className="h-3 w-3 text-primary-foreground" />
@@ -219,7 +221,7 @@ function WaitingRoom() {
                           )}
                         </div>
                         <div className="mt-2 text-center">
-                          <div className="font-display text-base font-semibold text-foreground leading-tight">{l.name}</div>
+                          <div className="font-display text-base font-semibold text-foreground leading-tight line-clamp-2">{l.name}</div>
                         </div>
                       </motion.button>
                     );

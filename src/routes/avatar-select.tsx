@@ -68,16 +68,18 @@ function AvatarSelect() {
                     onClick={() => selectLeader(l.id)}
                     whileTap={{ scale: 0.95 }}
                     className={cn(
-                      "relative overflow-hidden rounded-2xl glass-panel p-2 text-center transition-all",
+                      "relative rounded-2xl glass-panel p-2 text-center transition-all",
                       active && "ring-2 ring-gold glow-gold",
                     )}
                   >
-                    <div
-                      className="relative mx-auto h-16 w-16 overflow-hidden rounded-full p-[3px]"
-                      style={{ background: `linear-gradient(135deg, ${l.frameColor}, oklch(0.30 0.05 260))` }}
-                    >
-                      <img src={l.portrait} alt={l.name} width={128} height={128} loading="lazy"
-                        className="h-full w-full rounded-full object-cover" />
+                    <div className="relative mx-auto w-fit">
+                      <div
+                        className="h-16 w-16 overflow-hidden rounded-full p-[3px]"
+                        style={{ background: `linear-gradient(135deg, ${l.frameColor}, oklch(0.30 0.05 260))` }}
+                      >
+                        <img src={l.portrait} alt={l.name} width={128} height={128} loading="lazy"
+                          className="h-full w-full rounded-full object-cover" />
+                      </div>
                       {active && (
                         <div className="absolute -top-1 -right-1 rounded-full bg-gold p-0.5">
                           <Check className="h-2.5 w-2.5 text-primary-foreground" />
