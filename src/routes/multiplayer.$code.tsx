@@ -158,27 +158,33 @@ function MultiplayerGame() {
         </header>
 
         {/* Ranking + indicador de vez */}
-        <div className="relative z-10 flex gap-2 px-3 pb-2 overflow-x-auto shrink-0 scrollbar-none">
-          {sorted.map((p, i) => {
-            const isMe = p.playerId === playerId;
-            const isActive = gs.currentPlayerId === p.playerId && !gs.winnerId;
-            return (
-              <div key={p.playerId}
-                className={cn("flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 shrink-0 transition",
-                  isMe ? "bg-gold/15 border border-gold/40" : "glass-panel",
-                  isActive && "ring-1 ring-gold/60")}>
-                <span className="text-base">{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : ""}</span>
-                <span className={cn("font-sans text-xs font-semibold truncate max-w-[60px]",
-                  isMe ? "text-gold" : "text-foreground")}>
-                  {isMe ? "Você" : p.name.split(" ")[0]}
-                </span>
-                <span className="font-bold text-xs text-gold tabular-nums">{p.deckIds.length}✦</span>
-                {isActive && (
-                  <span className="flex h-1.5 w-1.5 rounded-full bg-gold animate-pulse shrink-0" />
-                )}
-              </div>
-            );
-          })}
+        <div className="relative z-10 shrink-0 pb-2">
+          <div className="flex gap-2 px-3 overflow-x-auto scrollbar-none">
+            {sorted.map((p, i) => {
+              const isMe = p.playerId === playerId;
+              const isActive = gs.currentPlayerId === p.playerId && !gs.winnerId;
+              return (
+                <div key={p.playerId}
+                  className={cn("flex flex-col items-center gap-0.5 rounded-xl px-2.5 py-1.5 shrink-0 transition min-w-[64px]",
+                    isMe ? "bg-gold/15 border border-gold/40" : "glass-panel",
+                    isActive && "ring-2 ring-gold shadow-[0_0_10px_2px_oklch(0.82_0.15_85/0.35)]")}>
+                  {isActive && (
+                    <span className="font-sans text-[9px] font-bold uppercase tracking-widest text-gold animate-pulse leading-none">
+                      vez
+                    </span>
+                  )}
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm leading-none">{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`}</span>
+                    <span className={cn("font-sans text-xs font-semibold truncate max-w-[52px]",
+                      isMe ? "text-gold" : "text-foreground")}>
+                      {isMe ? "Você" : p.name.split(" ")[0]}
+                    </span>
+                  </div>
+                  <span className="font-bold text-[11px] text-gold tabular-nums">{p.deckIds.length} ✦</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Centro: meu personagem + carta */}
