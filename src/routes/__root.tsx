@@ -9,6 +9,7 @@ import { useEffect } from "react";
 
 import "../styles.css";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { isMuted, startBgMusic, stopBgMusic } from "@/lib/audio";
 
 function NotFoundComponent() {
   return (
@@ -78,6 +79,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    // Browsers block AudioContext until a user gesture — start music on first tap/click/key
+    const start = () => {
+      if (!isMuted()) startBgMusic();
+    };
+    window.addEventListener("pointerdown", start, { once: true });
+    window.addEventListener("keydown", start, { once: true });
+    return () => {
+      stopBgMusic();
+    };
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

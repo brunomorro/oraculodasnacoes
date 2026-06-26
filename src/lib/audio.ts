@@ -89,6 +89,122 @@ export function playGameLose() {
   );
 }
 
+// ── Background Music ─────────────────────────────────────────────────────────
+// Synthesized cinematic ambient: D-minor drone + slow melody + bass pulses
+
+let _bgRunning = false;
+let _bgIntervals: ReturnType<typeof setInterval>[] = [];
+let _bgDrones: OscillatorNode[] = [];
+let _bgGain: GainNode | null = null;
+let _bgNoteIdx = 0;
+
+// D natural minor slow melody (Hz): D3 F3 G3 A3 G3 F3 D3 C3 D3 F3 A3 Bb3 A3 G3 F3 D3
+const BG_MELODY = [
+  146.83, 174.61, 196.00, 220.00,
+  196.00, 174.61, 146.83, 130.81,
+  146.83, 174.61, 220.00, 233.08,
+  220.00, 196.00, 174.61, 146.83,
+];
+
+function _bgNote(freq: number, duration: number, vol: number, type: OscillatorType = "sine") {
+  if (!_bgRunning || !_bgGain) return;
+  try {
+    const ac = getCtx();
+    const osc = ac.createOscillator();
+    const g = ac.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    const t = ac.currentTime;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol, t + 0.35);
+    g.gain.setValueAtTime(vol, t + Math.max(duration - 0.5, 0.1));
+    g.gain.linearRampToValueAtTime(0, t + duration);
+    osc.connect(g);
+    g.connect(_bgGain);
+    osc.start(t);
+    osc.stop(t + duration + 0.1);
+  } catch { /* ignore audio errors */ }
+}
+
+export function startBgMusic() {
+  if (_bgRunning || isMuted()) return;
+  _bgRunning = true;
+  try {
+    const ac = getCtx();
+    if (ac.state === "suspended") ac.resume();
+
+    // Master gain — fades in slowly
+    _bgGain = ac.createGain();
+    _bgGain.gain.setValueAtTime(0, ac.currentTime);
+    _bgGain.gain.linearRampToValueAtTime(0.20, ac.currentTime + 6);
+    _bgGain.connect(ac.destination);
+
+    // Drone: D2 + D2 (slightly detuned) + A2 through heavy lowpass → deep rumble
+    const droneFilter = ac.createBiquadFilter();
+    droneFilter.type = "lowpass";
+    droneFilter.frequency.value = 380;
+    droneFilter.Q.value = 1.8;
+    droneFilter.connect(_bgGain);
+
+    [
+      { f: 73.42, t: "sawtooth" as OscillatorType, v: 0.30 },
+      { f: 73.85, t: "sawtooth" as OscillatorType, v: 0.28 }, // detuned for chorus
+      { f: 110.0, t: "sine"     as OscillatorType, v: 0.14 }, // A2 fifth
+      { f: 146.83,t: "sine"     as OscillatorType, v: 0.10 }, // D3 octave
+    ].forEach(({ f, t, v }) => {
+      const osc = ac.createOscillator();
+      const g   = ac.createGain();
+      osc.type = t;
+      osc.frequency.value = f;
+      g.gain.value = v;
+      osc.connect(g);
+      g.connect(droneFilter);
+      osc.start();
+      _bgDrones.push(osc);
+    });
+
+    // Melody — slow note every 2.4 s
+    const playMelody = () => {
+      const freq = BG_MELODY[_bgNoteIdx % BG_MELODY.length];
+      _bgNoteIdx++;
+      _bgNote(freq, 2.1, 0.052);
+    };
+    playMelody();
+    _bgIntervals.push(setInterval(playMelody, 2400));
+
+    // Bass war-drum pulse every 3.8 s
+    const playDrum = () => _bgNote(73.42, 1.6, 0.24, "triangle");
+    setTimeout(playDrum, 600);
+    _bgIntervals.push(setInterval(playDrum, 3800));
+
+    // Occasional low accent (every ~7.6 s, offset)
+    setTimeout(() => {
+      const playAccent = () => _bgNote(87.31, 2.5, 0.14, "triangle"); // F2
+      playAccent();
+      _bgIntervals.push(setInterval(playAccent, 7600));
+    }, 3800);
+
+  } catch { /* ignore */ }
+}
+
+export function stopBgMusic() {
+  _bgRunning = false;
+  _bgIntervals.forEach(clearInterval);
+  _bgIntervals = [];
+  if (_bgGain) {
+    try {
+      const ac = getCtx();
+      _bgGain.gain.linearRampToValueAtTime(0, ac.currentTime + 2);
+    } catch { /* ignore */ }
+    setTimeout(() => {
+      _bgDrones.forEach((o) => { try { o.stop(); } catch { /* ignore */ } });
+      _bgDrones = [];
+      _bgGain = null;
+    }, 2200);
+  }
+  _bgNoteIdx = 0;
+}
+
 /** Hook: muted state + toggle, persisted in localStorage */
 export function useAudio() {
   const [muted, setMutedState] = useState(() => isMuted());
@@ -96,6 +212,8 @@ export function useAudio() {
     const next = !muted;
     setMuted(next);
     setMutedState(next);
+    if (next) stopBgMusic();
+    else startBgMusic();
   };
   return { muted, toggle };
 }
