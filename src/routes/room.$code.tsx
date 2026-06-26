@@ -151,15 +151,14 @@ function WaitingRoom() {
   return (
     <>
       <MapBackground />
-      <main className="relative mx-auto flex h-screen max-w-5xl flex-col px-4 pt-6 pb-6 gap-4 overflow-hidden">
+      <main className="relative mx-auto flex h-screen max-w-5xl flex-col px-4 pt-4 pb-6 gap-4 overflow-hidden">
 
-        {/* Header */}
-        <div className="shrink-0 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground hover:text-gold transition-colors">
-            <ArrowLeft className="h-4 w-4" /> Início
-          </Link>
-          <div className="w-16" />
-        </div>
+        {/* Botão voltar — canto superior esquerdo */}
+        <Link to="/"
+          className="absolute top-3 left-3 z-10 flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs uppercase tracking-widest text-muted-foreground hover:text-gold transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" /> Início
+        </Link>
 
         {/* Código da sala */}
         <div className="text-center shrink-0">
