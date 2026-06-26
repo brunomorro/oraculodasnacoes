@@ -207,7 +207,7 @@ function WaitingRoom() {
                       >
                         <div className="relative mx-auto w-fit">
                           <div
-                            className="h-20 w-20 overflow-hidden rounded-full p-[3px] sm:h-24 sm:w-24"
+                            className="h-20 w-20 overflow-hidden rounded-full p-[3px]"
                             style={{ background: `linear-gradient(135deg, ${l.frameColor}, oklch(0.30 0.05 260))` }}
                           >
                             <img src={l.portrait} alt={l.name} width={256} height={256} loading="lazy"

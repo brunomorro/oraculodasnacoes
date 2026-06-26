@@ -71,7 +71,7 @@ function Lobby() {
     <>
       <MapBackground />
       <main className="relative mx-auto flex h-screen max-w-lg flex-col items-center justify-center px-4 gap-6 overflow-hidden">
-        <Link to="/" className="absolute top-5 left-5 flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground hover:text-gold">
+        <Link to="/" className="fixed top-3 left-3 z-10 flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs uppercase tracking-widest text-muted-foreground hover:text-gold transition-colors">
           <ArrowLeft className="h-4 w-4" /> Voltar
         </Link>
 

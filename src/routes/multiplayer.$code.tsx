@@ -142,7 +142,7 @@ function MultiplayerGame() {
   if (isMobile) {
     const sorted = [...gs.players].sort((a, b) => b.deckIds.length - a.deckIds.length);
     return (
-      <div className="relative h-screen overflow-hidden flex flex-col select-none bg-background">
+      <div className="relative h-screen overflow-hidden flex flex-col select-none">
         <MapBackground />
 
         {/* Header */}
@@ -174,7 +174,7 @@ function MultiplayerGame() {
                 </span>
                 <span className="font-bold text-xs text-gold tabular-nums">{p.deckIds.length}✦</span>
                 {isActive && (
-                  <span className="text-[8px] font-sans font-bold uppercase tracking-widest text-gold animate-pulse">vez</span>
+                  <span className="flex h-1.5 w-1.5 rounded-full bg-gold animate-pulse shrink-0" />
                 )}
               </div>
             );
